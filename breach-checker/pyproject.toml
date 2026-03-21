@@ -42,6 +42,7 @@ ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S","N"]
+"src/breach_checker/checker.py" = ["S324"]  #SHA-1 necessário para HIBP k-anonymity
 
 [tool.mypy]
 strict = true
