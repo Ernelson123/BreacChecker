@@ -1,6 +1,5 @@
 import asyncio
 import getpass
-import sys
 from typing import Optional
 
 import typer
@@ -17,6 +16,7 @@ app = typer.Typer(
 )
 console = Console()
 
+
 @app.command()
 def check_pwd(verbose: bool = typer.Option(False, "--verbose", "-v")) -> None:
     """Verifica se uma password foi comprometida (k-Anonymity)."""
@@ -30,15 +30,14 @@ def check_pwd(verbose: bool = typer.Option(False, "--verbose", "-v")) -> None:
     with console.status("[bold]A verificar via k-Anonymity...[/bold]"):
         result = asyncio.run(check_password(password))
 
-    #Limpar password da memoia
-    del password 
+    del password
 
     if result.is_compromised:
         console.print(
             Panel(
                 f"[bold red]COMPROMETIDA[/bold red]\n"
                 f"Encontrada {result.occurrence_count:,} vezes em vazamentos.",
-                border_style="red"
+                border_style="red",
             )
         )
         raise typer.Exit(2)
@@ -47,8 +46,9 @@ def check_pwd(verbose: bool = typer.Option(False, "--verbose", "-v")) -> None:
         Panel("[bold green]NÃO ENCONTRADA[/bold green]", border_style="green")
     )
 
+
 @app.command()
-def check_mail(
+def check_email(
     email: str = typer.Argument(help="Email a verificar"),
     api_key: Optional[str] = typer.Option(
         None, "--api-key", envvar="HIBP_API_KEY"
@@ -68,7 +68,6 @@ def check_mail(
         console.print(Panel("[green]Email limpo.[/green]", border_style="green"))
         return
 
-    #Exibir tabela de vazamentos
     table = Table(title=f"{result.breach_count} vazamento(s)")
     table.add_column("Serviço", style="bold")
     table.add_column("Data")
@@ -82,9 +81,10 @@ def check_mail(
             ", ".join(b.data_classes[:3]),
             "[green]Sim[/green]" if b.is_verified else "[yellow]Não[/yellow]",
         )
-    
+
     console.print(table)
     raise typer.Exit(2)
+
 
 if __name__ == "__main__":
     app()
