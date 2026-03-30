@@ -1,15 +1,42 @@
-
-.venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.venv/
 .env
-.env.local
-*.env
+
+# UV
+uv.lock
+
+# Go
+scanner/breach-scanner
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Testes
 .pytest_cache/
 .coverage
 htmlcov/
-dist/
-build/
-*.egg-info/
-scanner/breach-scanner
-uv.lock
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+*.cache
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: '3.13'
+      
+      - run: uv sync --extra dev
+      
+      - name: Lint
+        run: uv run ruff check src/ tests/
+      
+      - name: Type Check
+        run: uv run mypy src/
+      
+      - name: Test
+        run: uv run pytest tests/ --cov=src/breach_checker --cov-fail-under=80
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      
+      - name: Vet
+        run: cd scanner && go vet ./...
+      
+      - name: Test
+        run: cd scanner && go test ./... -v
+      
+      - name: Build
+        run: cd scanner && go build -o breach-scanner .
+
+  secrets-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Verificar secrets no código
+        run: |
+          if grep -r 'HIBP_API_KEY\s*=' src/; then
+            echo "ERRO: Chave API hardcoded detetada!"
+            exit 1
+          fi
+          echo "OK: Nenhuma chave API hardcoded"

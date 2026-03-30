@@ -8,6 +8,12 @@ from typing import Optional
 from breach_checker.models import PasswordResult, BreachResult, Breach
 from breach_checker.cache import Cache
 
+import subprocess
+import json
+from pathlib import Path
+
+SCANNER_BIN = Path(__file__).parent.parent.parent / 'scanner' / 'breach-scanner'
+
 # URLs da API
 HIBP_PWNED_URL = 'https://api.pwnedpasswords.com/range/{prefix}'
 HIBP_EMAIL_URL = 'https://haveibeenpwned.com/api/v3/breachedaccount/{email}'
@@ -197,3 +203,38 @@ async def check_email(email: str, api_key: str, use_cache: bool = True) -> Breac
         raise last_exception
     
     raise RuntimeError("Unexpected error in check_email")
+
+
+def check_domain_fast(domain: str, api_key: str, concurrency: int = 20) -> dict:
+    """Chama o scanner Go. JSON no stdout. Erros no stderr.
+    
+    Args:
+        domain: Domínio a verificar (ex: empresa.com)
+        api_key: Chave API HIBP
+        concurrency: Número de goroutines paralelas
+    
+    Returns:
+        dict com DomainReport (JSON do Go)
+    
+    Raises:
+        FileNotFoundError: Se binário Go não existir
+        RuntimeError: Se scanner Go falhar
+    """
+    if not SCANNER_BIN.exists():
+        raise FileNotFoundError(
+            f'Binário não encontrado: {SCANNER_BIN}\n'
+            'Corre: cd scanner && go build -o breach-scanner .'
+        )
+    
+    result = subprocess.run(
+        [str(SCANNER_BIN), '--domain', domain, '--concurrency', str(concurrency)],
+        capture_output=True,
+        text=True,
+        timeout=300,
+        env={'HIBP_API_KEY': api_key},
+    )
+    
+    if result.returncode != 0:
+        raise RuntimeError(f'Scanner falhou: {result.stderr.strip()}')
+    
+    return json.loads(result.stdout)
