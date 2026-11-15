@@ -2,6 +2,8 @@
 
 Verificador seguro de credenciais comprometidas via HaveIBeenPwned API.
 
+**Ainda em desenvolvimento**
+
 **Python 3.13 · Go 1.25 · uv · k-Anonymity · HaveIBeenPwned API**
 
 ---
